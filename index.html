@@ -279,10 +279,22 @@
                                         <td class="px-6 py-4 whitespace-nowrap">Subcutaneous / IM</td>
                                     </tr>
                                     <tr>
-                                        <td class="px-6 py-4 whitespace-nowrap">2 Months or older</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">6-8 Weeks</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">Salmonella (if required)</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">0.2 ml (Live)</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">Subcutaneous</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-6 py-4 whitespace-nowrap">8-10 Weeks</td>
                                         <td class="px-6 py-4 whitespace-nowrap">Duck Cholera</td>
-                                        <td class="px-6 py-4 whitespace-nowrap">1 ml</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">1 ml (Killed)</td>
                                         <td class="px-6 py-4 whitespace-nowrap">Subcutaneous (under chest skin)</td>
+                                    </tr>
+                                    <tr class="bg-gray-50">
+                                        <td class="px-6 py-4 whitespace-nowrap font-semibold">12-14 Weeks</td>
+                                        <td class="px-6 py-4 whitespace-nowrap font-semibold">Salmonella (Booster)</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">0.2 ml (Live)</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">Subcutaneous</td>
                                     </tr>
                                      <tr class="bg-gray-50">
                                         <td class="px-6 py-4 whitespace-nowrap font-semibold">6 Months</td>
@@ -828,8 +840,8 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
         const sortedSymptoms = Array.from(allSymptoms).sort();
-        sortedSymptoms.forEach(symptom => {
-            const symptomId = symptom.replace(/[\s/()']/g, '-').toLowerCase();
+        sortedSymptoms.forEach((symptom, index) => {
+            const symptomId = `symptom-${index}`; // Use index for a guaranteed unique and valid ID
             const div = document.createElement('div');
             div.innerHTML = `
                 <input type="checkbox" id="${symptomId}" value="${symptom}" class="symptom-checkbox hidden">
