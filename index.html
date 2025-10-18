@@ -1,0 +1,1008 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Poultry Disease Guide</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            scroll-behavior: smooth;
+        }
+        .symptom-checkbox:checked + label {
+            background-color: #3b82f6;
+            color: white;
+            border-color: #3b82f6;
+            transform: scale(1.05);
+        }
+        .symptom-checkbox:focus + label {
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.5);
+        }
+        label {
+            transition: all 0.2s ease-in-out;
+        }
+        .header-icon {
+            width: 64px;
+            height: 64px;
+            stroke-width: 1.5;
+        }
+        .tab-btn.active {
+            border-bottom-color: #3b82f6;
+            color: #3b82f6;
+            font-weight: 600;
+        }
+        .highlight-symptom {
+            color: #c026d3; /* fuchsia-600 */
+            background-color: #fdf2f8; /* pink-50 */
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 700;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+
+    <div class="container mx-auto p-4 md:p-8">
+        <header class="text-center mb-8 bg-blue-600 text-white p-6 rounded-xl shadow-lg flex flex-col items-center">
+            <svg class="header-icon mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 18.375V12.75m0 5.625A2.25 2.25 0 0114.25 21h-4.5A2.25 2.25 0 017.5 18.375M12 12.75c-1.32 0-2.64-.268-3.868-.788-1.227-.52-2.313-1.25-2.822-2.132a5.25 5.25 0 01-1.31-3.858c0-.771.264-1.503.738-2.102A4.41 4.41 0 014.5 3.375c1.096 0 2.12.394 2.912 1.063.792.668 1.344 1.565 1.588 2.562m0 5.625c1.32 0 2.64-.268-3.868-.788 1.227-.52 2.313-1.25 2.822-2.132a5.25 5.25 0 001.31-3.858c0-.771-.264-1.503-.738-2.102A4.41 4.41 0 0019.5 3.375c-1.096 0-2.12.394-2.912 1.063-.792.668-1.344 1.565-1.588 2.562" />
+            </svg>
+            <h1 class="text-4xl md:text-5xl font-bold">Poultry Disease Guide</h1>
+            <p class="text-md text-blue-200 mt-2">An interactive tool for diagnosis and treatment in Bangladesh.</p>
+            <div class="mt-4 pt-4 border-t border-blue-500 w-full max-w-lg">
+                <p class="text-sm font-semibold text-blue-100">Developed By</p>
+                <p class="text-lg font-bold text-white mt-1">MD AKRAMUL HAQUE</p>
+                <p class="text-xs text-blue-200">BCS (LIVESTOCK), DLS, BANGLADESH</p>
+            </div>
+        </header>
+
+        <main class="bg-white rounded-xl shadow-lg">
+            <!-- Tab Navigation -->
+            <div class="border-b border-gray-200">
+                <nav class="-mb-px flex justify-center" aria-label="Tabs">
+                    <button id="tab-guide" class="tab-btn w-1/2 py-4 px-1 text-center border-b-2 font-medium text-lg text-gray-500 hover:text-gray-700 hover:border-gray-300 active">
+                        Disease Guide
+                    </button>
+                    <button id="tab-vaccine" class="tab-btn w-1/2 py-4 px-1 text-center border-b-2 font-medium text-lg text-gray-500 hover:text-gray-700 hover:border-gray-300">
+                        Vaccination Schedules
+                    </button>
+                </nav>
+            </div>
+
+            <div id="guide-content" class="p-6 md:p-8">
+                <!-- Direct Disease Lookup Section -->
+                <div id="direct-lookup" class="mb-8 pb-8 border-b border-gray-200">
+                    <h2 class="text-2xl font-semibold mb-2 text-gray-800">1. Direct Disease Lookup</h2>
+                    <p class="text-gray-600 mb-4">Select a disease directly from the list to see its details.</p>
+                    <div class="flex flex-col sm:flex-row gap-3 items-center">
+                        <select id="disease-dropdown" class="w-full sm:flex-grow p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 bg-white">
+                            <!-- Options will be populated by JS -->
+                        </select>
+                        <button id="show-disease-btn" class="bg-green-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-green-700 focus:outline-none focus:ring-4 focus:ring-green-300 transition-all duration-300 ease-in-out w-full sm:w-auto flex-shrink-0">
+                            Get Info
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Symptom Selection Section -->
+                <div id="symptom-selector" class="mb-8 pb-8 border-b border-gray-200">
+                    <h2 class="text-2xl font-semibold mb-2 text-gray-800">2. Symptom-Based Diagnosis</h2>
+                     <p class="text-gray-600 mb-4">Select the signs your poultry are showing to find possible diseases.</p>
+                    <div id="symptoms-list" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+                        <!-- Symptoms will be dynamically inserted here -->
+                    </div>
+                </div>
+
+                <!-- Diagnose Button -->
+                <div class="text-center">
+                    <button id="diagnose-btn" class="bg-blue-600 text-white font-bold py-3 px-8 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-300 transition-all duration-300 ease-in-out transform hover:scale-105 text-lg">
+                        Diagnose from Symptoms
+                    </button>
+                </div>
+
+                <!-- Results Section -->
+                <div id="results" class="mt-10 hidden">
+                    <h2 class="text-3xl font-bold mb-4 text-gray-800 border-t pt-8 text-center">Results</h2>
+                     <div class="p-4 mb-6 text-sm text-red-800 rounded-lg bg-red-100 border border-red-200" role="alert">
+                         <span class="font-bold">CRITICAL DISCLAIMER:</span> This tool provides general recommendations ONLY. Drug dosages depend on the animal's exact body weight, age, and health condition. You <span class="font-bold">MUST</span> consult a qualified veterinarian for an accurate diagnosis and prescription before administering any medication. Incorrect use of medicine can be dangerous.
+                     </div>
+                    <div id="results-list" class="space-y-8">
+                        <!-- Diagnosis results will be inserted here -->
+                    </div>
+                     <div id="no-results" class="text-center p-6 bg-gray-50 rounded-lg hidden">
+                         <p class="text-gray-600 font-medium">No potential diseases found based on the selected symptoms. Please try a different combination or consult a vet.</p>
+                     </div>
+                </div>
+            </div>
+
+            <div id="vaccine-content" class="p-6 md:p-8 hidden">
+                <h2 class="text-3xl font-bold mb-6 text-gray-800 text-center">Poultry Vaccination Schedules</h2>
+                <div class="space-y-10">
+                    <!-- Broiler Schedule -->
+                    <div>
+                        <h3 class="text-2xl font-semibold mb-4 text-center text-blue-700 bg-blue-100 p-3 rounded-lg">Broiler Chicken Vaccination Schedule</h3>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full bg-white border border-gray-200 rounded-lg shadow">
+                                <thead class="bg-gray-100">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Age (Days)</th>
+                                        <th class="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Vaccine Name</th>
+                                        <th class="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Strain</th>
+                                        <th class="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Type</th>
+                                        <th class="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Application</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-200">
+                                    <tr>
+                                        <td class="px-6 py-4 whitespace-nowrap">5 Days</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">IB + ND</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">Ma5+Clone 30</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">Live</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">1 Drop in Eye</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-6 py-4 whitespace-nowrap">10 Days</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">Gumboro</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">Gumboro 228E</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">Live</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">1 Drop in Eye</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-6 py-4 whitespace-nowrap">17 Days</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">Gumboro (Booster)</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">Gumboro 228E</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">Live</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">1 Drop in Eye</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-6 py-4 whitespace-nowrap">18 Days</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">IB + ND (Booster)</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">Ma5+Clone 30</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">Live</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">1 Drop in Eye</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-6 py-4 whitespace-nowrap">20 Days</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">ND</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">ND Clone 30</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">Live</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">Eye / Drinking Water</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <!-- Layer Schedule -->
+                    <div>
+                        <h3 class="text-2xl font-semibold mb-4 text-center text-green-700 bg-green-100 p-3 rounded-lg">Layer Chicken Vaccination Schedule</h3>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full bg-white border border-gray-200 rounded-lg shadow">
+                                <thead class="bg-gray-100">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Age</th>
+                                        <th class="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Vaccine Name</th>
+                                        <th class="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Type</th>
+                                        <th class="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Application</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-200">
+                                    <tr>
+                                        <td class="px-6 py-4 whitespace-nowrap">1 Day (Hatchery)</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">Marek's + AI</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">Live</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">Subcutaneous</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-6 py-4 whitespace-nowrap">5 Days</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">IB + ND</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">Live</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">1 Drop in Eye</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-6 py-4 whitespace-nowrap">10 Days</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">Gumboro</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">Live</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">1 Drop in Eye</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-6 py-4 whitespace-nowrap">17 Days</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">Gumboro (Booster)</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">Live</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">1 Drop in Eye</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-6 py-4 whitespace-nowrap">28 Days</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">IB + ND (Booster)</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">Live</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">1 Drop in Eye</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-6 py-4 whitespace-nowrap">38 Days</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">Fowl Pox</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">Live</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">Wing Web Stab</td>
+                                    </tr>
+                                     <tr>
+                                        <td class="px-6 py-4 whitespace-nowrap">60 Days</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">New Castle (ND)</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">Live (Lasota)</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">Drinking Water</td>
+                                    </tr>
+                                     <tr>
+                                        <td class="px-6 py-4 whitespace-nowrap">85 Days</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">IB + ND</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">Live</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">Drinking Water</td>
+                                    </tr>
+                                     <tr>
+                                        <td class="px-6 py-4 whitespace-nowrap">119 Days</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">IB + ND + EDS</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">Killed</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">Subcutaneous / IM</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <!-- Duck Schedule -->
+                     <div>
+                        <h3 class="text-2xl font-semibold mb-4 text-center text-purple-700 bg-purple-100 p-3 rounded-lg">Duck Vaccination Schedule</h3>
+                        <div class="overflow-x-auto">
+                           <table class="min-w-full bg-white border border-gray-200 rounded-lg shadow">
+                                <thead class="bg-gray-100">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Age</th>
+                                        <th class="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Vaccine Name</th>
+                                        <th class="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Dose / Type</th>
+                                        <th class="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Application</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-200">
+                                    <tr>
+                                        <td class="px-6 py-4 whitespace-nowrap">14-21 Days</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">Avian Influenza (Bird Flu)</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">0.5 ml (Killed)</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">Subcutaneous / IM</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-6 py-4 whitespace-nowrap">21-28 Days</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">Duck Plague</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">1 ml (Live)</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">Subcutaneous / IM</td>
+                                    </tr>
+                                    <tr class="bg-gray-50">
+                                        <td class="px-6 py-4 whitespace-nowrap font-semibold">4-5 Weeks after 1st dose</td>
+                                        <td class="px-6 py-4 whitespace-nowrap font-semibold">Avian Influenza (Booster)</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">0.5 ml (Killed)</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">Subcutaneous / IM</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-6 py-4 whitespace-nowrap">2 Months or older</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">Duck Cholera</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">1 ml</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">Subcutaneous (under chest skin)</td>
+                                    </tr>
+                                     <tr class="bg-gray-50">
+                                        <td class="px-6 py-4 whitespace-nowrap font-semibold">6 Months</td>
+                                        <td class="px-6 py-4 whitespace-nowrap font-semibold">Duck Cholera (Booster)</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">1 ml</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">Subcutaneous (under chest skin)</td>
+                                    </tr>
+                                    <tr class="bg-gray-50">
+                                        <td class="px-6 py-4 whitespace-nowrap font-semibold">Annually</td>
+                                        <td class="px-6 py-4 whitespace-nowrap font-semibold">Duck Plague (Booster)</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">1 ml (Live)</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">Subcutaneous / IM</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-6 py-4 whitespace-nowrap" colspan="4">
+                                            <p class="text-sm text-gray-600 p-2"><strong>Note:</strong> This is a general schedule. Vaccination protocols can vary based on vaccine manufacturer, regional disease prevalence, and maternal antibody levels. Always consult a qualified veterinarian for a schedule tailored to your farm.</p>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <!-- Salmonella & Fowl Cholera Schedule -->
+                    <div>
+                        <h3 class="text-2xl font-semibold mb-4 text-center text-red-700 bg-red-100 p-3 rounded-lg">Specific Bacterial Vaccination (Layers/Breeders)</h3>
+                        <div class="space-y-6">
+                            <div>
+                                <h4 class="text-xl font-medium mb-2 text-gray-700">Salmonella Vaccine (Fowl Typhoid)</h4>
+                                <div class="overflow-x-auto">
+                                   <table class="min-w-full bg-white border border-gray-200 rounded-lg shadow">
+                                        <thead class="bg-gray-100">
+                                            <tr>
+                                                <th class="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Dose</th>
+                                                <th class="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Age</th>
+                                                <th class="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Amount/Route</th>
+                                                <th class="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Example Brands</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="divide-y divide-gray-200">
+                                            <tr>
+                                                <td class="px-6 py-4 whitespace-nowrap">1st Dose</td>
+                                                <td class="px-6 py-4 whitespace-nowrap">6-8 Weeks</td>
+                                                <td class="px-6 py-4 whitespace-nowrap">0.2 ml SC</td>
+                                                <td class="px-6 py-4 whitespace-nowrap" rowspan="2">Nobilis SG 9R, CEVAC S.GALLINARUM, 9R-VAC</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="px-6 py-4 whitespace-nowrap">2nd Dose</td>
+                                                <td class="px-6 py-4 whitespace-nowrap">12-14 Weeks</td>
+                                                <td class="px-6 py-4 whitespace-nowrap">0.2 ml SC</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <div>
+                                <h4 class="text-xl font-medium mb-2 text-gray-700">Fowl Cholera Vaccine</h4>
+                                <div class="overflow-x-auto">
+                                   <table class="min-w-full bg-white border border-gray-200 rounded-lg shadow">
+                                        <thead class="bg-gray-100">
+                                            <tr>
+                                                <th class="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Dose</th>
+                                                <th class="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Age</th>
+                                                <th class="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Amount/Route</th>
+                                                <th class="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Example Brands</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="divide-y divide-gray-200">
+                                            <tr>
+                                                <td class="px-6 py-4 whitespace-nowrap">1st Dose</td>
+                                                <td class="px-6 py-4 whitespace-nowrap">4-6 Weeks</td>
+                                                <td class="px-6 py-4 whitespace-nowrap">0.5 ml SC</td>
+                                                <td class="px-6 py-4 whitespace-nowrap" rowspan="2">Avicolvax Vet, Bangla Fowl Cholera Vac</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="px-6 py-4 whitespace-nowrap">2nd Dose</td>
+                                                <td class="px-6 py-4 whitespace-nowrap">8-10 Weeks</td>
+                                                <td class="px-6 py-4 whitespace-nowrap">0.5 ml SC</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+        
+        <footer class="text-center mt-8 text-gray-500 text-sm">
+            <p>Built for informational purposes. Veterinary consultation is essential.</p>
+        </footer>
+    </div>
+
+<script>
+const db = {
+    diseases: [
+        // BACTERIAL DISEASES
+        {
+            name: "Pullorum Disease (Salmonellosis)",
+            category: "Bacterial",
+            symptoms: ["Dead-in-shell chicks", "<strong class='highlight-symptom'>Whitish diarrhea</strong>", "<strong class='highlight-symptom'>Pasted vent</strong>", "Drowsiness", "Huddling", "Gasping", "Lameness", "Swollen joints"],
+            postmortem_symptoms: ["<strong class='highlight-symptom'>Inflamed and unabsorbed yolk sac</strong>", "Enlarged liver with white necrotic foci", "Nodules on the heart and congested lungs", "Misshapen and cystic ova in adults"],
+            treatment: [
+                {
+                    drugs: [
+                        { generic_name: "Florfenicol", brand_name: "Floren 10% (Renata), A-flor 10 (ACI), Florcol (Techno), Flor-N (Advent)", dose: "1ml/L drinking water for 3-5 days" },
+                        { generic_name: "Potentiated Sulfonamide", brand_name: "Cotrim-Vet (ACI), Sulfatrim (Square), Eskaytrim (SKF)", dose: "As per veterinarian's advice" }
+                    ]
+                },
+                {
+                    drugs: [
+                        { generic_name: "Amoxicillin OR Neomycin", brand_name: "Amoxicil Vet (ACI), Renamox (Renata), Moxacil (Square) OR Neomix (Renata), Neovet (ACI), Neotracin (Square)", dose: "1g/2-4L DW for 3-5 days" }
+                    ]
+                }
+            ],
+            supportive_treatment: ["Electrolytes (Electromin-ACI, Glucolyte Vet-Renata)", "Organic Acid", "Liver Tonic (Hepatocare-SKF, Liva-vit-ACI)"],
+            prevention: ["Vaccination for Salmonella Gallinarum (SG9R strain) is available for layers/breeders.", "Source chicks from Salmonella-free hatcheries.", "Maintain strict hygiene and biosecurity.", "Control of rodents and insects."]
+        },
+        {
+            name: "Fowl Typhoid (Salmonellosis)",
+            category: "Bacterial",
+            symptoms: ["<strong class='highlight-symptom'>Watery to mucoid greenish/yellowish diarrhea</strong>", "Ruffled feathers", "Drooping of wings", "Drowsiness", "Reduced egg production", "Pasty vent in adults"],
+            postmortem_symptoms: ["<strong class='highlight-symptom'>Enlarged, friable, and bronze-colored liver</strong>", "Hemorrhagic and deformed ovaries", "Nodules on the heart"],
+            treatment: [
+                {
+                    drugs: [
+                        { generic_name: "Florfenicol", brand_name: "Floren 10% (Renata), A-flor 10 (ACI), Florcol (Techno), Flor-N (Advent)", dose: "1ml/L drinking water for 3-5 days" },
+                        { generic_name: "Potentiated Sulfonamide", brand_name: "Cotrim-Vet (ACI), Sulfatrim (Square), Eskaytrim (SKF)", dose: "As per veterinarian's advice" }
+                    ]
+                },
+                {
+                    drugs: [
+                        { generic_name: "Amoxicillin OR Neomycin", brand_name: "Amoxicil Vet (ACI), Renamox (Renata), Moxacil (Square) OR Neomix (Renata), Neovet (ACI), Neotracin (Square)", dose: "1g/2-4L DW for 3-5 days" }
+                    ]
+                }
+            ],
+            supportive_treatment: ["Electrolytes (Electromin-ACI, Glucolyte Vet-Renata)", "Organic Acid", "Liver Tonic (Hepatocare-SKF, Liva-vit-ACI)"],
+            prevention: ["Vaccination (SG9R strain) is recommended for layers and breeders. 1st dose at 6-8 weeks, 2nd dose at 12-14 weeks.", "Strict biosecurity is crucial."]
+        },
+        {
+            name: "Fowl Cholera",
+            category: "Bacterial",
+            symptoms: ["<strong class='highlight-symptom'>Sudden death</strong>", "Nasal discharge", "Sneezing", "White watery or green mucoid diarrhea", "<strong class='highlight-symptom'>Cyanotic & swollen comb & wattles</strong>", "Torticollis (twisted neck)", "Lameness"],
+            postmortem_symptoms: ["<strong class='highlight-symptom'>Enlarged liver with numerous small white necrotic foci</strong>", "<strong class='highlight-symptom'>Petechial hemorrhage on heart muscles and abdominal fat</strong>", "Hemorrhagic intestine", "Congested carcass"],
+            treatment: [
+                 {
+                    drugs: [
+                        { generic_name: "Sulphadiazine+Trimethoprim", brand_name: "Cotrim-Vet (ACI), Sulfatrim (Square), Eskaytrim (SKF)", dose: "As per vet advice (approx. 25-30 mg/kg)" }
+                    ]
+                },
+                {
+                    drugs: [
+                         { generic_name: "Florfenicol OR Enrofloxacin", brand_name: "Floren 10% (Renata), Florcol (Techno) OR Enrocin (ACI), Renacin 10% (Renata), Cipro-A (Techno)", dose: "1ml/L or 1ml/2L DW for 3-5 days" }
+                    ]
+                }
+            ],
+            supportive_treatment: ["Acetylsalicylic acid (Aspirin) for fever", "Electrolytes", "Acidifier", "Liver Tonic"],
+            prevention: ["Vaccination with inactivated bacterin is effective. See Vaccination Schedules tab.", "Strict biosecurity.", "Control rodents and wild birds."]
+        },
+        {
+            name: "Infectious Coryza",
+            category: "Bacterial",
+            symptoms: ["Seromucoid nasal & ocular discharges", "<strong class='highlight-symptom'>Swollen face, sinuses, head & wattles</strong>", "Labored breathing & rales", "Reduced feed intake", "Drop in egg production"],
+            postmortem_symptoms: ["<strong class='highlight-symptom'>Catarrhal or fibrino-purulent (pus-like) exudate in nasal passages and infraorbital sinuses</strong>", "Conjunctivitis"],
+            treatment: [
+                {
+                    drugs: [
+                        { generic_name: "Erythromycin+Sulphadiazine+Trimethoprim", brand_name: "Erisen Vet (ACI)", dose: "1g/L water for 3-5 days" }
+                    ]
+                }
+            ],
+            supportive_treatment: ["Respiratory Stimulant (Ambrox-Vet-ACI)", "Mucolytic drug (Bromhexine-Square)"],
+            prevention: ["All-in/all-out farming system.", "Vaccination (imported vaccines available).", "Maintain good ventilation."]
+        },
+        {
+            name: "CRD / Mycoplasmosis",
+            category: "Bacterial",
+            symptoms: ["Sneezing", "coughing", "nasal discharge", "<strong class='highlight-symptom'>rattling sound during breathing</strong>", "open-mouth breathing", "reduced feed intake", "drop in egg production"],
+            postmortem_symptoms: ["<strong class='highlight-symptom'>White, cheese-like mucus in nasal passages, trachea, and lungs</strong>", "<strong class='highlight-symptom'>White coating on the heart, lungs, and liver (airsacculitis)</strong>"],
+            treatment: [
+                {
+                    drugs: [
+                        { generic_name: "Tylosin & Chlortetracycline", brand_name: "Tylovet (ACI), Tylosin-200 (Renata), Tylofos (SKF) & CTC Vet (ACI), Renamycin (Renata)", dose: "As per vet's advice" }
+                    ]
+                }
+            ],
+            supportive_treatment: ["Respiratory Stimulant (Ambrox-Vet-ACI)"],
+            prevention: ["Good biosecurity is essential.", "Source chicks from Mycoplasma-free flocks.", "Vaccination is available."]
+        },
+        {
+            name: "Colibacillosis",
+            category: "Bacterial",
+            symptoms: ["Enteritis", "Pasted vent", "Depression", "Sneezing", "Dyspnea (difficulty breathing)", "Septicemia", "Omphalitis (yolk sac infection) in chicks"],
+            postmortem_symptoms: ["<strong class='highlight-symptom'>Fibrinous covering on the heart (pericarditis) and liver (perihepatitis)</strong>", "<strong class='highlight-symptom'>Thickened air sacs (airsacculitis)</strong>", "Omphalitis (yolk sac infection) in chicks", "Congested and consolidated lungs", "Salpingitis (inflammation of oviduct)"],
+            treatment: [
+                {
+                    drugs: [
+                        { generic_name: "Potentiated Sulfonamide", brand_name: "Cotrim-Vet (ACI), Sulfatrim (Square), Eskaytrim (SKF)", dose: "As per veterinarian's advice" },
+                        { generic_name: "Florfenicol", brand_name: "Floren 10% (Renata), A-flor 10 (ACI), Florcol (Techno)", dose: "As per veterinarian's advice" }
+                    ]
+                }
+            ],
+            supportive_treatment: ["Electrolytes", "Acidifier/Organic acids", "Liver tonic", "Immuno-stimulant"],
+            prevention: ["Good sanitation and hatchery management.", "Ensure good litter quality.", "Proper ventilation.", "Chlorination of drinking water."]
+        },
+        {
+            name: "Necrotic Enteritis",
+            category: "Bacterial",
+            symptoms: ["Dark colored diarrhea", "Severe depression", "Ruffled feathers", "Drooling of saliva", "<strong class='highlight-symptom'>Sudden increase in mortality</strong>"],
+            postmortem_symptoms: ["<strong class='highlight-symptom'>Thickened and distended small intestine with a brownish, blanket-like membrane on the mucosa (Turkish towel appearance)</strong>", "Foul-smelling dark brown intestinal fluid", "Swollen and congested liver"],
+            treatment: [
+                {
+                    drugs: [
+                        { generic_name: "Lincomycin", brand_name: "Linco-S (ACI), Lincomix (Renata), Lincomycin (Square)", dose: "As per veterinarian's advice" }
+                    ]
+                }
+            ],
+            supportive_treatment: ["Probiotics/Eubiotics", "Enzymes", "Electrolytes", "Anticoccidial drug (as it's often a predisposing factor)"],
+            prevention: ["Control coccidiosis.", "Use of probiotics and prebiotics in feed.", "Avoid sudden changes in diet.", "Good litter management."]
+        },
+        // VIRAL DISEASES
+        {
+            name: "Newcastle Disease (ND)",
+            category: "Viral",
+            symptoms: ["Gasping, rales", "Nasal & ocular discharges", "<strong class='highlight-symptom'>Whitish to yellowish-green watery diarrhea</strong>", "Depression", "Tremors", "<strong class='highlight-symptom'>Torticollis (twisted neck)</strong>", "Paralysis of legs or wings", "Sudden drop in egg production"],
+            postmortem_symptoms: ["<strong class='highlight-symptom'>Pinpoint hemorrhages on the tips of proventricular glands</strong>", "<strong class='highlight-symptom'>Button-like hemorrhagic ulcers in the intestine</strong>", "Hemorrhagic cecal tonsils", "Blood clots or mucus in the trachea"],
+            treatment: [
+                {
+                    drugs: [
+                        { generic_name: "Antiviral (Supportive)", brand_name: "Viracid (Renata), Virokill (ACI)", dose: "As per product guidelines" },
+                        { generic_name: "Antibiotic (Secondary Infection)", brand_name: "Ciprocin Vet (ACI), Renacin (Renata), Cipro-A (Techno), Kiprosin (SKF)", dose: "1ml/1-2L DW for 5 days" }
+                    ]
+                }
+            ],
+            supportive_treatment: ["No specific treatment.", "Disinfectant Spray (Timsen, Virkon S)"],
+            prevention: ["Strict biosecurity.", "Vaccination is key. See Vaccination Schedules tab for details."]
+        },
+        {
+            name: "Infectious Bursal Disease (IBD/Gumboro)",
+            category: "Viral",
+            symptoms: ["Diarrhea, sometimes blood-tinged", "Soiled vent feathers", "Depression", "<strong class='highlight-symptom'>Vent pecking</strong>", "Huddling together", "Ruffled feathers", "<strong class='highlight-symptom'>High mortality (20-80%) in 3-6 week old birds</strong>"],
+            postmortem_symptoms: ["<strong class='highlight-symptom'>Swollen and hemorrhagic Bursa of Fabricius (early stage) or atrophied bursa (late stage)</strong>", "<strong class='highlight-symptom'>Hemorrhages in thigh and pectoral muscles</strong>", "Hemorrhages at the junction between the proventriculus and gizzard", "Pale and swollen kidneys with urates"],
+            treatment: [
+                 {
+                     drugs: [
+                        { generic_name: "Antiviral (Supportive)", brand_name: "Viracid (Renata), Virokill (ACI)", dose: "As per product guidelines" },
+                        { generic_name: "Antibiotic (Secondary Infection)", brand_name: "Ciprocin Vet (ACI), Renacin (Renata), Cipro-A (Techno), Kiprosin (SKF)", dose: "1ml/1-2L DW for 5 days" }
+                     ]
+                 }
+            ],
+            supportive_treatment: ["No specific treatment.", "Electrolytes and Vitamin C", "Vitamin K", "Disinfectant Spray (Timsen, Virkon S)"],
+            prevention: ["Vaccination is essential. See Vaccination Schedules tab for details.", "Strict biosecurity, as the virus is very resistant."]
+        },
+         {
+            name: "Marek's Disease",
+            category: "Viral",
+            symptoms: ["<strong class='highlight-symptom'>Paralysis of one or both legs & wings (one leg forward, one back)</strong>", "Enlarged feather follicles (tumors)", "Torticollis (twisted neck)", "Irregularly shaped pupils and blindness", "Weight loss"],
+            postmortem_symptoms: ["<strong class='highlight-symptom'>Marked enlargement of one or more nerves (commonly sciatic and brachial)</strong>", "<strong class='highlight-symptom'>Whitish tumors in various organs like liver, spleen, kidneys, gonads, and heart</strong>", "Enlarged feather follicles"],
+            treatment: [
+                {
+                    drugs: [
+                        { generic_name: "Supportive Antibiotic", brand_name: "Erisen Vet (ACI)", dose: "1g/L water for 3-5 days" }
+                    ]
+                }
+            ],
+            supportive_treatment: ["No specific curative treatment.", "Cal-P Powder (Renata)", "Vitamin-B Complex (Rena B+C, Prithi WS)", "Garlic Juice Extract (1 Garlic in 1L DW)"],
+            prevention: ["Vaccination at hatchery (Day 1, subcutaneous).", "The virus can persist in the environment for months; thorough cleaning and disinfection are vital."]
+        },
+        {
+            name: "Lymphoid Leucosis",
+            category: "Viral",
+            symptoms: ["<strong class='highlight-symptom'>Abdominal distension (big liver) in older birds (>14 weeks)</strong>", "Unthriftiness, gradual weight loss", "Pale combs & wattles", "Emaciation"],
+            postmortem_symptoms: ["<strong class='highlight-symptom'>Nodular or diffuse tumorous enlargement of the liver, spleen, and bursa of Fabricius</strong>", "Tumors are soft, smooth and glistening (unlike firm tumors in Marek's)"],
+            treatment: [
+                {
+                    drugs: [
+                        { generic_name: "Vitamin E", brand_name: "E-Sel (Renata), Vit E-sol (ACI)", dose: "40-200 IU/kg feed" }
+                    ]
+                }
+            ],
+            supportive_treatment: ["No specific cure.", "Supportive vitamins and high-quality nutrition."],
+            prevention: ["Eradication from breeder flocks is the primary method of control.", "Hatch chicks from LL-free parents."]
+        },
+        {
+            name: "Inclusion Body Hepatitis & Hydropericardium Hepatitis Syndrome (IBH & HHS)",
+            category: "Viral",
+            symptoms: ["<strong class='highlight-symptom'>Abrupt onset of mortality in young chickens (<6 weeks)</strong>", "Lethargy, huddling", "Ruffled feathers", "Yellow, mucoid droppings"],
+            postmortem_symptoms: ["<strong class='highlight-symptom'>Swollen, enlarged, yellowish liver with multiple pale and/or red (hemorrhagic) foci</strong>", "<strong class='highlight-symptom'>In HHS: accumulation of clear, straw-colored fluid in the pericardial sac (hydropericardium)</strong>"],
+            treatment: [],
+            supportive_treatment: ["No specific etiologic treatment.", "Vitamins B & D", "Glucose (for hypoglycemia)", "Sodium Bicarbonate for metabolic acidosis (2-5 g/L water)", "Phytogenic extracts"],
+            prevention: ["Vaccination of breeder flocks to provide maternal antibodies.", "Good biosecurity to prevent vertical transmission."]
+        },
+        {
+            name: "Fowl Pox",
+            category: "Viral",
+            symptoms: ["<strong class='highlight-symptom'>Scabs or wart-like lesions on un-feathered areas (comb, wattles, legs) - Dry Form</strong>", "<strong class='highlight-symptom'>Yellow-cheesy plaques in mouth, larynx & trachea - Wet Form</strong>", "Respiratory distress (wet form)"],
+            postmortem_symptoms: ["Lesions are the same as live symptoms"],
+            treatment: [
+                {
+                    drugs: [
+                        { generic_name: "Antiviral (Supportive)", brand_name: "Viracid (Renata), Virokill (ACI)", dose: "As per product guidelines" },
+                        { generic_name: "Chlortetracycline (Secondary Infection)", brand_name: "CTC Vet (ACI), Renamycin (Renata)", dose: "1g/L DW for 5 days" }
+                    ]
+                }
+            ],
+            supportive_treatment: ["Antiseptic for wounds (Povisep - ACI).", "Disinfectant spray (Timsen, Virkon S)."],
+            prevention: ["Vaccination at Day 38 (Fowl Pox) for layers.", "Control mosquitoes, which can transmit the virus."]
+        },
+        {
+            name: "Avian Influenza (Bird Flu)",
+            category: "Viral",
+            symptoms: ["<strong class='highlight-symptom'>Sudden high mortality</strong>", "Listlessness, sneezing, coughing", "Watery greenish diarrhea", "<strong class='highlight-symptom'>Cyanosis of comb and wattles</strong>", "Red discoloration of the shank"],
+            postmortem_symptoms: ["<strong class='highlight-symptom'>Generalized hemorrhages in various organs</strong>", "<strong class='highlight-symptom'>Pinpoint hemorrhages on abdominal fat and inner surface of the keel bone</strong>", "Enlarged and fragile liver", "Congested and hemorrhagic lungs"],
+            treatment: [
+                {
+                    drugs: [
+                        { generic_name: "Antiviral (Supportive)", brand_name: "Viracid (Renata), Virokill (ACI)", dose: "As per product guidelines" },
+                        { generic_name: "Ciprofloxacin", brand_name: "Ciprocin Vet (ACI), Renacin (Renata)", dose: "1ml/1-2L DW for 5 days" }
+                    ]
+                }
+            ],
+            supportive_treatment: ["No specific treatment. Report to authorities immediately.", "Immunopotentiator", "Vitamin C (Rena C, Cee-vit)", "Disinfectant spray (Timsen, Virkon S)."],
+            prevention: ["Strict biosecurity is paramount.", "Prevent contact with wild birds.", "Vaccination is available (e.g., combined with Marek's vaccine)."]
+        },
+        {
+            name: "Infectious Bronchitis (IB)",
+            category: "Viral",
+            symptoms: ["Sneezing, coughing, gasping, rales", "Oculo-nasal discharge", "<strong class='highlight-symptom'>Thin-shelled or misshapen eggs</strong>", "<strong class='highlight-symptom'>Marked drop in egg production</strong>"],
+            postmortem_symptoms: ["<strong class='highlight-symptom'>Caseous (cheesy) plugs in the lower trachea or bronchi</strong>", "Cloudy air sacs", "<strong class='highlight-symptom'>Pale and swollen kidneys with urates in the ureters</strong>", "Watery egg albumin in layers"],
+            treatment: [
+                {
+                    drugs: [
+                        { generic_name: "Tylosin or Tylvalosin", brand_name: "Tylovet (ACI), Tylosin-200 (Renata), Tylofos (SKF)", dose: "As per veterinarian's advice" },
+                        { generic_name: "Enrofloxacin or Levofloxacin", brand_name: "Enrocin (ACI), Renacin (Renata), Levoflox (SKF)", dose: "As per veterinarian's advice" }
+                    ]
+                }
+            ],
+            supportive_treatment: ["No specific curative treatment.", "Respiratory expectorant/mucolytic.", "Nephrotonic (Renal-S, Nefrotec, Uro-T)", "Phytogenic extracts."],
+            prevention: ["Vaccination is crucial. See Vaccination Schedules tab for details."]
+        },
+        // PROTOZOAL DISEASES
+        {
+            name: "Coccidiosis",
+            category: "Protozoal",
+            symptoms: ["<strong class='highlight-symptom'>Bloody diarrhea</strong>", "Soiled vent", "Pale comb & wattles", "Depression", "Ruffled feathers", "Anemia & dehydration", "Huddling"],
+            postmortem_symptoms: ["<strong class='highlight-symptom'>Distended ceca filled with clotted blood (cecal coccidiosis - E. tenella)</strong>", "Thickened and ballooned intestine", "Small white and red spots on the intestinal wall"],
+            treatment: [
+                {
+                    drugs: [
+                        { generic_name: "Amprolium", brand_name: "Amprol 20 (Renata), Amprolium Vet (ACI)", dose: "1g/L water for 3-5 days" },
+                        { generic_name: "Toltrazuril", brand_name: "Toltrazuril 2.5% (Renata), Coxitril (Square), Toltra-T (Techno)", dose: "1ml/L of water for 48 hours" }
+                    ]
+                }
+            ],
+            supportive_treatment: ["Electrolytes (Electromin, Glucolyte Vet)", "Vitamin K (Rena-K)", "Hematinic"],
+            prevention: ["Use of anticoccidial drugs in feed (e.g., Monensin, Salinomycin).", "Good litter management.", "Natural alternatives.", "Vaccination is available."]
+        },
+        {
+            name: "Histomoniasis (Blackhead)",
+            category: "Protozoal",
+            symptoms: ["Drooping wings", "Ruffled feathers", "<strong class='highlight-symptom'>Yellow droppings (sulphur-yellow)</strong>", "Lethargy", "Darkening of the head/face skin"],
+            postmortem_symptoms: ["<strong class='highlight-symptom'>Circular, depressed, yellowish-green necrotic lesions on the liver ('saucer-like lesions')</strong>", "Enlarged ceca with hard, cheesy, laminated cores"],
+            treatment: [
+                {
+                    drugs: [
+                        { generic_name: "Metronidazole", brand_name: "Amodis-Vet (ACI), Metronid (Renata), Dirovet (Square)", dose: "As per veterinarian's advice" }
+                    ]
+                }
+            ],
+            supportive_treatment: ["Provide supportive care with vitamins and electrolytes."],
+            prevention: ["Control cecal worms, as they are intermediate hosts.", "Do not raise chickens and turkeys together.", "Practice good sanitation."]
+        },
+        // PARASITIC DISEASES
+        {
+            name: "Internal Parasites (Worms)",
+            category: "Parasitic",
+            symptoms: ["Poor growth", "Unthriftiness", "Drop in egg production", "Indigestion", "Anemia", "Diarrhea", "Visible worms in droppings"],
+            postmortem_symptoms: ["Visible presence of adult roundworms or tapeworms in the intestine", "Intestinal inflammation or blockage in severe cases"],
+            treatment: [
+                {
+                    drugs: [
+                        { generic_name: "Piperazine Citrate OR Levamisole HCl", brand_name: "Parvex (Renata), Wazine 30 (ACI), Razinmax (Square) OR Elcaris (Renata), Leva-Vet (ACI), Levavet (Square), Levasol (Techno)", dose: "As per product guidelines" }
+                    ]
+                }
+            ],
+            supportive_treatment: ["Liver tonic (Hepatocare-SKF, Liva-vit-ACI)"],
+            prevention: ["Regular deworming schedule: Day 60, Day 120, then every 30 days for birds on litter.", "Keep litter dry.", "Rotate pastures if free-ranging."]
+        },
+        {
+            name: "External Parasites (Lice, Mites, Ticks)",
+            category: "Parasitic",
+            symptoms: ["Restlessness", "Itching or irritation", "Feather damage/loss", "Reduced feed intake", "Pale comb & wattles", "Drop in egg production", "<strong class='highlight-symptom'>Scaly legs (mites)</strong>"],
+            postmortem_symptoms: ["Emaciation and pale carcass in severe infestations", "Skin irritation and damage may be visible"],
+            treatment: [
+                {
+                    drugs: [
+                        { generic_name: "Ivermectin", brand_name: "Ivermec (Renata), Acimec (ACI), I-mec (Square), Ivermet (Techno)", dose: "Consult a veterinarian for proper dosage." }
+                    ]
+                }
+            ],
+            supportive_treatment: ["Provide dust baths with wood ash.", "Clean and disinfect the coop thoroughly with appropriate ectoparasiticides."],
+            prevention: ["Prevent contact with wild birds.", "Quarantine new birds before introducing them to the flock.", "Regularly inspect birds and housing for signs of parasites."]
+        },
+         // OTHER/METABOLIC DISEASES
+         {
+            name: "Gout",
+            category: "Other",
+            symptoms: ["Depression", "Reduced feed intake", "Ruffled feathers", "Emaciation", "<strong class='highlight-symptom'>Swollen joints & lameness</strong>", "Diarrhoea", "Moist vent"],
+            postmortem_symptoms: ["<strong class='highlight-symptom'>Chalky-white urate deposits on internal organs (visceral gout)</strong> or in joints (articular gout)", "Swollen and pale kidneys"],
+            treatment: [
+                {
+                    drugs: [
+                        { generic_name: "Allopurinol", brand_name: "Alurol Vet (Advent)", dose: "10-20 mg/kg bwt (e.g., 2.5 g/L drinking water)" }
+                    ]
+                }
+            ],
+            supportive_treatment: ["Urinary acidifiers (Ammonium chloride, DL methionine)", "Nephrotonic (Renal-S, Nefrotec, Uro-T)", "Moringa leaf powder in feed"],
+            prevention: ["Ensure balanced protein levels in feed.", "Provide adequate clean drinking water.", "Avoid excessive calcium in non-laying birds."]
+        },
+        {
+            name: "Mycotoxicosis",
+            category: "Other",
+            symptoms: ["Retarded growth", "Anorexia", "Ruffled feathers", "Anemia", "Ataxia", "Paralysis", "Erosions in gizzard", "Pale & friable liver"],
+            postmortem_symptoms: ["<strong class='highlight-symptom'>Enlarged, pale, fatty, and friable liver</strong>", "Enlarged and pale kidneys", "Erosions in the gizzard lining and mouth"],
+            treatment: [
+                {
+                    drugs: [
+                        { generic_name: "Toxin Binder", brand_name: "Tox-Nil (ACI), Zymox (Renata), Toxinil (Square)", dose: "As per product guidelines" },
+                        { generic_name: "Vitamin ADE solution", brand_name: "AD3E-Vet (ACI), Rena-DE Plus (Renata)", dose: "As per product guidelines" }
+                    ]
+                }
+            ],
+            supportive_treatment: ["Vitamin-mineral mix (Rena WS Pow)", "Organic acids", "Copper sulfate"],
+            prevention: ["Use high-quality, mold-free feed.", "Store feed in a dry, cool place.", "Use mold inhibitors in feed.", "Clean feeders regularly."]
+        },
+        {
+            name: "Aspergillosis (Brooder Pneumonia)",
+            category: "Other",
+            symptoms: ["<strong class='highlight-symptom'>Dyspnea (difficulty breathing), gasping</strong>", "Increased thirst", "Cheesy materials under the eyelids", "Incoordination"],
+            postmortem_symptoms: ["<strong class='highlight-symptom'>Yellowish, caseous (cheesy) nodules or plaques in the lungs and air sacs</strong>", "Thickened and cloudy air sacs"],
+            treatment: [
+                {
+                    drugs: [
+                        { generic_name: "Copper Sulphate", brand_name: "Copper-Vet (ACI)", dose: "As per product guidelines" },
+                        { generic_name: "Antifungal (Nystatin, Fluconazole)", brand_name: "Consult Vet for human preparations", dose: "As per veterinarian's advice" }
+                    ]
+                }
+            ],
+            supportive_treatment: ["Respiratory Stimulant (Ambrox-Vet)", "Improve ventilation"],
+            prevention: ["Use clean, dry, mold-free litter.", "Ensure good ventilation in the brooder house.", "Clean and disinfect brooder equipment between batches."]
+        },
+        // DUCK DISEASES
+        {
+            name: "Duck Plague (Duck Virus Enteritis)",
+            category: "Duck Diseases",
+            symptoms: ["Greenish watery or <strong class='highlight-symptom'>bloody diarrhea</strong>", "Drooping wings", "Extreme thirst", "Photophobia", "<strong class='highlight-symptom'>Blood-stained vent</strong>", "<strong class='highlight-symptom'>Sudden high mortality</strong>"],
+            postmortem_symptoms: ["<strong class='highlight-symptom'>'Paint-brush' hemorrhages on the heart</strong>", "Hemorrhages on liver, pancreas, and mesentery", "Free blood in body cavities", "<strong class='highlight-symptom'>Hemorrhagic ring at esophagus-proventriculus junction</strong>", "Diphtheritic membrane in esophagus"],
+            treatment: [
+                {
+                    drugs: [
+                        { generic_name: "Antibiotic (Secondary Infection)", brand_name: "Enrocin (ACI), Renacin (Renata), Cipro-A (Techno), Kiprosin (SKF)", dose: "As per veterinarian's advice" }
+                    ]
+                }
+            ],
+            supportive_treatment: ["Electrolytes", "Liver tonic", "Immuno-stimulant", "Nephrotonic", "Nerve tonic", "Hematinic", "Vitamin K", "Vaccination of affected flock may help during an outbreak."],
+            prevention: ["Strict biosecurity", "Vaccination is key. See Vaccination Schedules tab for details."]
+        },
+        {
+            name: "Duck Viral Hepatitis",
+            category: "Duck Diseases",
+            symptoms: ["<strong class='highlight-symptom'>Sudden onset and death in young ducklings (<3 weeks)</strong>", "<strong class='highlight-symptom'>Opisthotonos (head arched back)</strong>", "Twisted neck", "Incoordination"],
+            postmortem_symptoms: ["<strong class='highlight-symptom'>Swollen and hemorrhagic liver with red/black spots ('ecchymotic hemorrhages')</strong>", "Swollen and hemorrhagic kidneys", "Enlarged and mottled spleen"],
+            treatment: [
+                {
+                    drugs: [
+                        { generic_name: "Antiserum (if available)", brand_name: "N/A", dose: "0.5 mL IM per duckling" },
+                        { generic_name: "Antibiotic (Secondary Infection)", brand_name: "Enrocin (ACI), Renacin (Renata), Cipro-A (Techno), Kiprosin (SKF)", dose: "As per veterinarian's advice" }
+                    ]
+                }
+            ],
+            supportive_treatment: ["Electrolytes", "Liver tonic", "Immuno-stimulant", "Nephrotonic", "Nerve tonic", "Hematinic", "Vitamin K"],
+            prevention: ["Vaccination of breeder ducks to provide maternal antibodies to ducklings.", "Strict hatchery and brooder sanitation."]
+        },
+        {
+            name: "Duck Cholera (Pasteurellosis)",
+            category: "Duck Diseases",
+            symptoms: ["<strong class='highlight-symptom'>Sudden death</strong>", "Oculo-nasal discharges", "Greenish mucoid diarrhea", "Tremors", "Torticollis (twisted neck)", "Depression"],
+            postmortem_symptoms: ["<strong class='highlight-symptom'>Enlarged liver with numerous small white necrotic foci</strong>", "<strong class='highlight-symptom'>Petechial hemorrhage on heart muscles and abdominal fat</strong>", "Congested carcass"],
+            treatment: [
+                {
+                    drugs: [
+                        { generic_name: "Ceftriaxone", brand_name: "Ceftron-Vet (Square), Triject (SKF), Acicef (ACI)", dose: "50-100 mg/kg body weight SC/IM for 5 days (Vet prescription)" },
+                        { generic_name: "Potentiated Sulfonamide", brand_name: "Cotrim-Vet (ACI), Sulfatrim (Square), Eskaytrim (SKF)", dose: "As per veterinarian's advice" }
+                    ]
+                }
+            ],
+            supportive_treatment: ["Acetylsalicylic acid (Aspirin)", "Electrolytes", "Acidifier", "Liver tonic", "Vitamin K"],
+            prevention: ["Vaccination. See Vaccination Schedules tab for details.", "Strict biosecurity."]
+        },
+        {
+            name: "Anatipestifer Infection (New Duck Disease)",
+            category: "Duck Diseases",
+            symptoms: ["Oculo-nasal discharges", "Mild coughing & sneezing", "Tremors of head and neck", "Depression", "Incoordination", "Walking with head drawn into body"],
+            postmortem_symptoms: ["<strong class='highlight-symptom'>Fibrinous exudate (yellowish-white layer) covering the heart (pericarditis) and liver (perihepatitis)</strong>", "Fibrinous airsacculitis", "Fibrinous meningitis"],
+            treatment: [
+                {
+                    drugs: [
+                        { generic_name: "Ceftriaxone", brand_name: "Ceftron-Vet (Square), Triject (SKF), Acicef (ACI)", dose: "As per veterinarian's advice (e.g., 50-100 mg/kg)" }
+                    ]
+                }
+            ],
+            supportive_treatment: ["Provide supportive care with vitamins and electrolytes.", "Ensure clean drinking water and a stress-free environment."],
+            prevention: ["Good sanitation and biosecurity.", "All-in/all-out management.", "Vaccines are available in some regions."]
+        }
+    ]
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+    const diseaseData = db.diseases;
+
+    const symptomsListContainer = document.getElementById('symptoms-list');
+    const diagnoseBtn = document.getElementById('diagnose-btn');
+    const resultsContainer = document.getElementById('results');
+    const resultsList = document.getElementById('results-list');
+    const noResultsMessage = document.getElementById('no-results');
+    const diseaseDropdown = document.getElementById('disease-dropdown');
+    const showDiseaseBtn = document.getElementById('show-disease-btn');
+
+    const tabGuide = document.getElementById('tab-guide');
+    const tabVaccine = document.getElementById('tab-vaccine');
+    const guideContent = document.getElementById('guide-content');
+    const vaccineContent = document.getElementById('vaccine-content');
+    
+    function initializePage() {
+        // Populate symptoms for checkboxes
+        const allSymptoms = new Set();
+        diseaseData.forEach(disease => {
+            if (disease.symptoms) {
+                disease.symptoms.forEach(symptom => {
+                    // Strip html tags for the checkbox list
+                    allSymptoms.add(symptom.replace(/<[^>]+>/g, ''));
+                });
+            }
+        });
+        const sortedSymptoms = Array.from(allSymptoms).sort();
+        sortedSymptoms.forEach(symptom => {
+            const symptomId = symptom.replace(/[\s/()']/g, '-').toLowerCase();
+            const div = document.createElement('div');
+            div.innerHTML = `
+                <input type="checkbox" id="${symptomId}" value="${symptom}" class="symptom-checkbox hidden">
+                <label for="${symptomId}" class="block border-2 border-gray-300 rounded-lg p-3 text-center text-sm font-medium cursor-pointer hover:bg-gray-200 transition-colors duration-200 h-full flex items-center justify-center">${symptom}</label>
+            `;
+            symptomsListContainer.appendChild(div);
+        });
+
+        // Populate disease dropdown
+        diseaseDropdown.innerHTML = '<option value="">-- Select a Disease --</option>';
+        const categories = [...new Set(diseaseData.map(d => d.category))].filter(c => c).sort();
+        categories.forEach(category => {
+            const optgroup = document.createElement('optgroup');
+            optgroup.label = `--- ${category} ---`;
+            diseaseData
+                .filter(d => d.category === category)
+                .sort((a, b) => a.name.localeCompare(b.name))
+                .forEach(disease => {
+                    const option = document.createElement('option');
+                    option.value = disease.name;
+                    option.textContent = disease.name;
+                    optgroup.appendChild(option);
+                });
+            diseaseDropdown.appendChild(optgroup);
+        });
+    }
+    
+    function formatList(items) {
+        if (!items || items.length === 0) return '<p class="text-gray-700 text-sm">N/A</p>';
+        return `<ul class="list-disc list-inside text-gray-700 text-sm space-y-1">${items.map(item => `<li>${item}</li>`).join('')}</ul>`;
+    }
+
+    function formatTreatments(protocols) {
+        if (!protocols || protocols.length === 0) return '<p class="text-gray-700 text-sm">No specific treatment. Consult a veterinarian.</p>';
+        
+        return protocols.map((protocol, index) => {
+            const drugsHtml = protocol.drugs.map(t => `
+                <div class="p-3 bg-gray-50 rounded-lg border border-gray-200 hover:shadow-sm transition-shadow">
+                    <p><strong>Generic/Type:</strong> ${t.generic_name}</p>
+                    <p><strong>Brand (Example):</strong> ${t.brand_name}</p>
+                    <p><strong>Dose:</strong> ${t.dose}</p>
+                </div>
+            `).join('');
+
+            let protocolHeader = '';
+            if (protocols.length > 1) {
+                protocolHeader = `<h5 class="font-bold text-md text-gray-600 mt-4 mb-2">Protocol ${String.fromCharCode(65 + index)}</h5>`;
+            }
+
+            return (index > 0 ? '<div class="text-center font-bold my-4">OR</div>' : '') + protocolHeader + `<div class="space-y-2">${drugsHtml}</div>`;
+
+        }).join('');
+    }
+
+
+    function renderResults(results) {
+        resultsContainer.classList.remove('hidden');
+        resultsList.innerHTML = ''; 
+
+        if (results.length > 0) {
+            noResultsMessage.classList.add('hidden');
+            results.forEach((result, index) => {
+                const isTopMatch = result.matchCount > 0 && index === 0;
+                const isDirectLookup = !result.hasOwnProperty('matchCount');
+
+                let cardClass = 'bg-white border border-gray-200 rounded-xl overflow-hidden shadow-md';
+                let headerClass = 'p-4 bg-gray-100 border-b border-gray-200';
+                let headerContent = `<h3 class="text-xl font-bold text-gray-800">${result.name} <span class="text-sm font-medium text-gray-500">(${result.category})</span></h3>`;
+
+                if (isTopMatch) {
+                    cardClass = 'bg-blue-50 border-2 border-blue-500 rounded-xl overflow-hidden shadow-lg';
+                    headerClass = 'p-4 bg-blue-100 border-b border-blue-200';
+                    headerContent = `
+                        <div class="flex justify-between items-center flex-wrap gap-2">
+                            <div>
+                                <h3 class="text-xl font-bold text-blue-800">${result.name}</h3>
+                                <p class="text-sm font-medium text-blue-600">${result.category}</p>
+                            </div>
+                            <span class="bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-full">Top Match</span>
+                        </div>
+                        <p class="text-sm font-medium text-gray-700 mt-2">Matched ${result.matchCount} of ${document.querySelectorAll('.symptom-checkbox:checked').length} selected symptoms.</p>`;
+                } else if(isDirectLookup) {
+                    cardClass = 'bg-green-50 border-2 border-green-500 rounded-xl overflow-hidden shadow-lg';
+                    headerClass = 'p-4 bg-green-100 border-b border-green-200';
+                    headerContent = `<h3 class="text-xl font-bold text-green-800">${result.name} <span class="text-sm font-medium text-green-600">(${result.category})</span></h3>`;
+                } else if (result.matchCount > 0) {
+                     headerContent += `<p class="text-sm font-medium text-gray-600 mt-1">Matched ${result.matchCount} of ${document.querySelectorAll('.symptom-checkbox:checked').length} selected symptoms.</p>`;
+                }
+
+                const symptomsHtml = isDirectLookup 
+                    ? `<div><h4 class="font-semibold text-gray-800 mb-2 flex items-center"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>Live Symptoms:</h4>${formatList(result.symptoms)}</div>`
+                    : `<div><h4 class="font-semibold text-gray-800 mb-2 flex items-center"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>Matched Symptoms:</h4>${formatList(result.matchedSymptoms)}</div>`;
+                
+                const postmortemHtml = `<div><h4 class="font-semibold text-gray-800 mb-2 flex items-center"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 4v6l2-2 2 2V4M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>Postmortem Findings:</h4>${formatList(result.postmortem_symptoms)}</div>`;
+                const treatmentHtml = `<div><h4 class="font-semibold text-gray-800 mb-2 flex items-center"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M12 6V4m0 16v-2M12 12l-2-2m2 2l2-2m-2 2l-2 2m2-2l2 2" /></svg>Treatment Protocol:</h4><div class="space-y-2 mt-2">${formatTreatments(result.treatment)}</div></div>`;
+                const supportiveTreatmentHtml = `<div><h4 class="font-semibold text-gray-800 mb-2 flex items-center"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>Supportive Care:</h4>${formatList(result.supportive_treatment)}</div>`;
+                const preventionHtml = `<div><h4 class="font-semibold text-gray-800 mb-2 flex items-center"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>Prevention Strategy:</h4>${formatList(result.prevention)}</div>`;
+
+                const resultCard = document.createElement('div');
+                resultCard.className = cardClass;
+                const cardBody = document.createElement('div');
+                cardBody.className = 'p-6 space-y-6';
+                
+                cardBody.innerHTML = `
+                    ${symptomsHtml}
+                    <hr>
+                    ${postmortemHtml}
+                    <hr>
+                    ${treatmentHtml}
+                    <hr>
+                    ${supportiveTreatmentHtml}
+                    <hr>
+                    ${preventionHtml}
+                `;
+                
+                resultCard.innerHTML = `<div class="${headerClass}">${headerContent}</div>`;
+                resultCard.appendChild(cardBody);
+                resultsList.appendChild(resultCard);
+            });
+        } else {
+             noResultsMessage.classList.remove('hidden');
+        }
+        resultsContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    diagnoseBtn.addEventListener('click', () => {
+        const selectedSymptoms = Array.from(document.querySelectorAll('.symptom-checkbox:checked')).map(cb => cb.value);
+        if (selectedSymptoms.length === 0) {
+            alert("Please select at least one symptom.");
+            return;
+        }
+        const diagnosisResults = diseaseData.map(disease => {
+            const cleanSymptoms = disease.symptoms.map(s => s.replace(/<[^>]+>/g, ''));
+            const matchedSymptoms = cleanSymptoms.filter(symptom => selectedSymptoms.includes(symptom));
+            return { ...disease, matchCount: matchedSymptoms.length, matchedSymptoms: matchedSymptoms };
+        })
+        .filter(disease => disease.matchCount > 0)
+        .sort((a, b) => b.matchCount - a.matchCount);
+        document.getElementById('results').querySelector('h2').textContent = 'Diagnosis Results';
+        renderResults(diagnosisResults);
+    });
+
+    showDiseaseBtn.addEventListener('click', () => {
+        const selectedDiseaseName = diseaseDropdown.value;
+        if (!selectedDiseaseName) {
+            alert("Please select a disease from the list.");
+            return;
+        }
+        const disease = diseaseData.find(d => d.name === selectedDiseaseName);
+        if (disease) {
+            document.getElementById('results').querySelector('h2').textContent = `Details for ${disease.name}`;
+            renderResults([disease]);
+        }
+    });
+    
+    // Tab switching logic
+    tabGuide.addEventListener('click', () => {
+        guideContent.classList.remove('hidden');
+        vaccineContent.classList.add('hidden');
+        tabGuide.classList.add('active');
+        tabVaccine.classList.remove('active');
+    });
+
+    tabVaccine.addEventListener('click', () => {
+        guideContent.classList.add('hidden');
+        vaccineContent.classList.remove('hidden');
+        tabGuide.classList.remove('active');
+        tabVaccine.classList.add('active');
+    });
+
+    initializePage();
+});
+</script>
+</body>
+</html>
+
